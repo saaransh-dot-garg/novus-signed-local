@@ -13,6 +13,7 @@ export interface NotebookObjectMetadata {
   notebookId: string;
   organizationId?: string;
   noteId?: string;
+  noteCount?: number;
   notebookShared?: boolean;
 }
 
