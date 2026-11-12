@@ -27,7 +27,7 @@ export function AssistantPanel() {
       fileUploaded: false,
     });
     try {
-      const { reply, model } = await api.askAssistant(next);
+      const { reply, model } = await api.askAssistant(next); // model feeds agent_response tracking
       trackAssistantEvent("agent_response", {
         conversationId,
         messageId: crypto.randomUUID(),
