@@ -8,6 +8,9 @@ import { AdminAuthProvider } from "./auth/AdminAuthContext";
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element");
 
+// Boot Novus once with an anonymous visitor. AdminAuthProvider identifies the signed-in admin.
+pendo.initialize({ visitor: { id: "" } });
+
 createRoot(root).render(
   <StrictMode>
     <BrowserRouter>

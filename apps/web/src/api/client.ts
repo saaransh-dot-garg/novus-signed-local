@@ -5,7 +5,9 @@ export interface Profile {
   email: string;
   name: string;
   role: "researcher" | "admin";
-  organization: { id: string; name: string; plan: string };
+  active: boolean;
+  createdAt: string;
+  organization: { id: string; name: string; plan: string; seats: number };
 }
 
 export interface NotebookSummary {
