@@ -60,7 +60,7 @@ assistantRouter.post("/", async (req, res: Response<unknown, AuthedLocals>) => {
   const notebookCount = [...notebooks.values()].filter(
     (notebook) => notebook.organizationId === res.locals.organization.id
   ).length;
-  // assistant_response_received: records how each assistant request ended.
+  // assistant_response_received: records how each assistant request ended, once per request.
   const trackResponse = (outcome: "answered" | "not_configured" | "failed", model: string) =>
     trackServerEvent(
       "assistant_response_received",
