@@ -11,9 +11,34 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function identifyVisitor(profile: Profile) {
+  pendo.identify({
+    visitor: {
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.name,
+      role: profile.role,
+      organizationId: profile.organization.id,
+      active: profile.active,
+      createdAt: profile.createdAt,
+    },
+    account: {
+      id: profile.organization.id,
+      name: profile.organization.name,
+      plan: profile.organization.plan,
+      seats: profile.organization.seats,
+    },
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(() => tokenStore.get() !== null);
+
+  // Runs after sign-in, session restore, and profile edits so Novus has current metadata.
+  useEffect(() => {
+    if (user) identifyVisitor(user);
+  }, [user]);
 
   useEffect(() => {
     if (!tokenStore.get()) return;
@@ -36,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       tokenStore.clear();
       setUser(null);
+      pendo.clearSession();
     }
   };
 
