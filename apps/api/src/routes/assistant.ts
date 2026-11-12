@@ -1,4 +1,5 @@
 import { Router, type Response } from "express";
+import { trackServerEvent } from "../analytics/pendoTrack.js";
 import { requireAuth, type AuthedLocals } from "../auth.js";
 import { notebooks } from "../store.js";
 
@@ -56,9 +57,27 @@ assistantRouter.post("/", async (req, res: Response<unknown, AuthedLocals>) => {
     "You are the Fieldnotes research assistant. Answer questions about the researcher's " +
     `field notes, and suggest what to observe next.\n\n${context}`;
 
+  const notebookCount = [...notebooks.values()].filter(
+    (notebook) => notebook.organizationId === res.locals.organization.id
+  ).length;
+  // assistant_response_received: records how each assistant request ended.
+  const trackResponse = (outcome: "answered" | "not_configured" | "failed", model: string) =>
+    trackServerEvent(
+      "assistant_response_received",
+      res.locals.user.id,
+      res.locals.organization.id,
+      {
+        model,
+        outcome,
+        messageCount: messages.length,
+        notebookCount,
+        organizationId: res.locals.organization.id,
+      }
+    );
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    const notebookCount = context.split("Notebook ").length - 1;
+    trackResponse("not_configured", "none");
     res.json({
       reply: `The assistant is not configured (set OPENAI_API_KEY). You have ${notebookCount} notebook(s).`,
       model: null,
@@ -68,9 +87,11 @@ assistantRouter.post("/", async (req, res: Response<unknown, AuthedLocals>) => {
 
   try {
     const reply = await askOpenAi(apiKey, system, messages);
+    trackResponse("answered", MODEL);
     res.json({ reply, model: MODEL });
   } catch (error) {
     console.error("Assistant request failed", error);
+    trackResponse("failed", MODEL);
     res.status(502).json({ error: "The assistant is unavailable right now" });
   }
 });
