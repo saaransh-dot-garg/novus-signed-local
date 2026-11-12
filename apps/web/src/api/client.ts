@@ -7,7 +7,7 @@ export interface Profile {
   role: "researcher" | "admin";
   active: boolean;
   createdAt: string;
-  organization: { id: string; name: string; plan: string; seats: number };
+  organization: { id: string; name: string; plan: string; seats: number }; // seats feeds Pendo account metadata
 }
 
 export interface NotebookSummary {
